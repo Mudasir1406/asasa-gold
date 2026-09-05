@@ -1,26 +1,44 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens (spec §10) — palette from Asasa's site, Geist for display, Inter for body. */
+@theme {
+  --color-forest: #0d4a46;
+  --color-forest-deep: #0a2e2b;
+  --color-lime: #8ccb50;
+  --color-lime-soft: #acdf6f;
+  --color-mist: #f9fafa;
+  --color-ink: #1a1f1b;
+  --color-ink-muted: #7a847e;
+  --color-gold: #e9cb78;
+  --color-gold-soft: #f5de7d;
+  --color-coral: #e0807a;
+
+  --radius-field: 0.625rem;
+  --radius-card: 18px;
 }
 
+/* Font variables are set on <html> by next/font in app/layout.tsx. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    color-scheme: light;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-mist font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-forest;
+  }
 }
