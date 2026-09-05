@@ -30,6 +30,10 @@
 
   body {
     @apply bg-mist font-sans text-ink antialiased;
+    /* Mobile is a first-class surface here, so the page must never scroll
+       sideways. `clip` (not `hidden`) contains stray overflow without
+       creating a scroll container, so `position: sticky` still works. */
+    overflow-x: clip;
   }
 
   h1,

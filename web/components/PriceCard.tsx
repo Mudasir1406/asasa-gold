@@ -184,7 +184,9 @@ function DerivationPopover({ price }: { price: PriceView }) {
           />
         </svg>
       </summary>
-      <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-card border border-ink/8 bg-white p-4 text-sm shadow-lg sm:left-auto sm:w-[22rem]">
+      {/* Width is clamped to the viewport, not to the 28px summary it hangs off,
+          so the source rows can never push the page into horizontal scroll. */}
+      <div className="absolute left-0 top-full z-20 mt-2 w-[min(22rem,calc(100vw-2.5rem))] rounded-card border border-ink/8 bg-white p-4 text-sm shadow-lg sm:left-auto sm:right-0">
         <p className="font-display font-semibold">How this price is derived</p>
         <div className="mt-3 flex flex-col gap-3">
           <SourceRow
@@ -243,7 +245,7 @@ function SourceRow({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
         <span className="font-medium text-ink">
           {reading.name}
           {selected && (
