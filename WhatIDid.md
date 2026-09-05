@@ -56,15 +56,52 @@ The brief leaves several things open. Each of these is a decision I made rather 
 
 ## What I built
 
-_(finalised after the build; see the sections below)_
+**`api/` — Laravel 13, PHP 8.4, Postgres in production and SQLite locally.**
+
+- `Domain/Pricing` — two source adapters behind one interface, a normalizer (the single float→integer boundary), spread and guardrail maths, and a `PriceService` that keeps at most one snapshot per five minutes and derives the trading state from it. Every fetch is written to `price_snapshots`, failures included, so the outage history is inspectable.
+- `Domain/Ledger` — six accounts, balanced postings, cached balances under row locks, and an `integrity()` check that re-sums the ledger four different ways.
+- `Domain/Quotes` — `QuoteMath` (four input cases, rounding fixed per case), `QuoteService` (issue, lazy expiry, affordability), `SettlementService` (the one transaction that settles).
+- `Domain/Demo` — the reviewer tools, including balance adjustments that post against an external account so the books stay balanced even when a reviewer rewrites them.
+- 83 tests, 864 assertions, all external HTTP faked.
+
+**`web/` — Next.js 16, React 19, Tailwind v4, TypeScript strict.**
+
+Single page following the brief's five steps. Server-clock countdown, PKR ⇄ gram input toggle, quick-amount chips, receipt with before → after on all three balances, trade history, and the reviewer drawer. 33 unit tests over the money formatters and the display-side quote maths.
+
+**Verified, not assumed.** Against a running stack:
+
+- Live cross-check: PKR 39,547.41/g, PakGold and GoldPrice.org 3 bps apart, `CROSS_CHECKED`.
+- **20 concurrent confirms against one quote, three rounds, eight PHP workers → exactly one trade each time**, ledger +4 entries, integrity ok. (`scripts/double-confirm.sh`)
+- Kill primary → fails over to GoldPrice.org, amber banner, trading continues. Kill both → paused, last known price greyed with its age, quote requests rejected with `TRADING_PAUSED`.
+- Guardrail raised to 50,000 → buy price moves to the floor, sell unchanged, quote carries `guardrail_applied`.
+- All three insufficiency paths return the right code with required vs available.
+- Expired lock → nothing traded, one-tap re-quote that states whether the price moved.
+- Gold conservation held across every trade: customer + platform inventory stayed at 52,500 mg.
+
+Screenshots at 390 px and 1280 px are in [`docs/screenshots/`](./docs/screenshots/).
 
 ## Known gaps
 
-_(finalised after the build)_
+Things I decided not to build, and would want to before this went near a real user.
+
+- **The reviewer tools are unauthenticated and mutate the ledger.** Deliberate, so the stress cases are reachable on the deployed URL, but they are the first thing to delete or gate.
+- **No rate limiting and no request idempotency at the edge.** Settlement is idempotent per quote, which is the case that matters here, but a real API would take an `Idempotency-Key` on every mutating call.
+- **Prices are polled, not pushed.** The client refetches state every 30 seconds and ticks the countdown locally. A websocket or SSE feed would be better, and would remove the small window where the displayed age drifts from the server's.
+- **The guardrail is a flat configured number.** It should derive from inventory cost basis so it protects an actual position rather than a guess.
+- **Two sources is thin.** Cross-checking two feeds catches one bad feed; it can't tell you which is wrong. Three would let it vote.
+- **No currency or purity options.** 24K and PKR only, per the brief.
+- **`platform_cash` is unbounded.** Sells can always be paid. A real platform has a treasury limit and would need to refuse or queue.
+- **SQLite locally, Postgres in production.** The concurrency proof ran on SQLite, whose write locking is coarser than Postgres row locking. The `UNIQUE` constraint on `trades.quote_id` is what makes the guarantee portable; I'd want the same script run against production before trusting it fully.
+- **Accessibility is decent, not audited.** Labels, roles and focus order are in place; I have not run a screen reader over it.
 
 ## How to review it in three minutes
 
-_(finalised after deploy, with the live links)_
+1. Open the app. Note the price, the source badge, "Cross-checked ✓", and the three balances.
+2. Tap **50%**, then **Lock price for 75 s**. Read the breakdown — market reference, spread, what you pay, what you get.
+3. Press **Confirm**. Twice, quickly, if you like. You get one receipt showing before → after on all three balances and "Books balanced ✓".
+4. Open **Reviewer tools** → **Kill PakGold** → **Force refresh now**. The badge switches to GoldPrice.org and an amber banner explains why. Kill the other one too: trading stops, and the last known price stays on screen with its age.
+5. Turn both back on, lock another price, and let the 75 seconds run out. Nothing trades, and one tap gets you a fresh quote that tells you whether the price moved.
+6. Still curious: raise the guardrail above market, or drain the wallet to PKR 5,000 and try to buy.
 
 ## Links
 

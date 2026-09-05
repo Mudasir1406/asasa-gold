@@ -10,3 +10,4 @@ api/storage/logs/*
 web/node_modules/
 web/.next/
 web/out/
+.playwright-mcp/

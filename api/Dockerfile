@@ -6,7 +6,10 @@ ENV PHP_OPCACHE_ENABLE=1 \
     SSL_MODE=off \
     AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=true \
-    AUTORUN_LARAVEL_MIGRATION_ISOLATION=true \
+    # Isolation deliberately OFF: --isolated needs the cache_locks table, which
+    # does not exist on a first deploy against an empty database. One replica
+    # (see railway.json) means there is nothing to isolate against anyway.
+    AUTORUN_LARAVEL_MIGRATION_ISOLATION=false \
     AUTORUN_LARAVEL_CONFIG_CACHE=true \
     AUTORUN_LARAVEL_ROUTE_CACHE=true
 
