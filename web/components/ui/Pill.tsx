@@ -14,12 +14,16 @@ export type PillTone = "neutral" | "forest" | "lime" | "gold" | "coral";
  * Props
  * - `tone` — background tint (default `neutral`).
  * - `dot` — leading status dot in the tone colour.
+ * - `pulse` — gently pulses that dot. Reserved for genuinely live state
+ *   (a fresh, cross-checked price); a paused or stale market must sit still,
+ *   because a pulsing dot reads as "this is updating" and that would lie.
  * - `size` — `sm` (default) for chips, `md` for the buy/sell price pills.
  * - Renders a `<span>`; other attributes pass through.
  */
 export interface PillProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: PillTone;
   dot?: boolean;
+  pulse?: boolean;
   size?: "sm" | "md";
 }
 
@@ -34,6 +38,7 @@ const TONE: Record<PillTone, { bg: string; dot: string }> = {
 export function Pill({
   tone = "neutral",
   dot = false,
+  pulse = false,
   size = "sm",
   className,
   children,
@@ -52,7 +57,11 @@ export function Pill({
       {dot && (
         <span
           aria-hidden="true"
-          className={cx("size-1.5 shrink-0 rounded-full", TONE[tone].dot)}
+          className={cx(
+            "size-1.5 shrink-0 rounded-full",
+            TONE[tone].dot,
+            pulse && "animate-live-dot",
+          )}
         />
       )}
       {children}

@@ -40,10 +40,11 @@ export function Receipt({ receipt, integrityOk, onNewTrade }: ReceiptProps) {
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-lime text-forest-deep"
+            className="flex size-9 shrink-0 animate-pop items-center justify-center rounded-full bg-lime text-forest-deep"
           >
             <svg viewBox="0 0 20 20" className="size-5">
               <path
+                className="animate-draw"
                 d="M5 10.5l3.2 3.2L15 7"
                 fill="none"
                 stroke="currentColor"

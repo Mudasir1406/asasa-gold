@@ -191,7 +191,12 @@ export default function Home() {
               <div className="print:hidden">
                 <TrustBanner price={state.price} />
               </div>
-              <div className="grid gap-4 lg:grid-cols-[1fr_420px] lg:items-start">
+              <div
+                // `[&>*]:min-w-0` matters: grid items default to
+                // `min-width: auto`, so a non-wrapping child (the odometer)
+                // would otherwise blow the track wider than the viewport.
+                className="grid gap-4 [&>*]:min-w-0 lg:grid-cols-[1fr_420px] lg:items-start"
+              >
                 <div className="flex flex-col gap-4 print:hidden lg:col-start-1">
                   <PriceCard price={state.price} elapsed={tick} />
                   <BalancesCard
@@ -200,7 +205,13 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2">
+                <div
+                  // Keyed on the flow stage so each panel rises in as it
+                  // replaces the last. It marks the step change without
+                  // moving anything the reader is mid-way through reading.
+                  key={flow.kind}
+                  className="animate-rise lg:col-start-2 lg:row-start-1 lg:row-span-2"
+                >
                   {flow.kind === "form" && (
                     <TradeForm
                       key={flow.initial ? "prefilled" : "empty"}

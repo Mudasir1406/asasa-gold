@@ -28,12 +28,18 @@
     color-scheme: light;
   }
 
+  /* Mobile is a first-class surface here, so the page must never scroll
+     sideways. This has to sit on `html`, not `body`: an overflow set only on
+     `body` propagates up to the viewport and stops containing anything.
+     `clip` rather than `hidden` avoids creating a scroll container, so
+     `position: sticky` still works. This is a backstop — real overflow is
+     fixed at the source. */
+  html {
+    overflow-x: clip;
+  }
+
   body {
     @apply bg-mist font-sans text-ink antialiased;
-    /* Mobile is a first-class surface here, so the page must never scroll
-       sideways. `clip` (not `hidden`) contains stray overflow without
-       creating a scroll container, so `position: sticky` still works. */
-    overflow-x: clip;
   }
 
   h1,
@@ -44,5 +50,60 @@
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-forest;
+  }
+}
+
+/* ── Motion ────────────────────────────────────────────────────────────────
+   Restrained on purpose: this is a money screen, so movement is used to draw
+   the eye to a value that genuinely changed, never for flourish. Anything
+   here is decoration — every animated value is also readable as plain text.
+   The reduced-motion block at the end is a hard stop, not a slowdown. */
+
+@keyframes asasa-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes asasa-flash {
+  0%   { background-color: color-mix(in oklab, var(--color-lime) 22%, transparent); }
+  100% { background-color: transparent; }
+}
+
+@keyframes asasa-flash-down {
+  0%   { background-color: color-mix(in oklab, var(--color-coral) 18%, transparent); }
+  100% { background-color: transparent; }
+}
+
+@keyframes asasa-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.82); }
+}
+
+@keyframes asasa-draw {
+  from { stroke-dashoffset: 28; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes asasa-pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  60%  { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-rise       { animation: asasa-rise 340ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-flash      { animation: asasa-flash 1400ms ease-out both; }
+.animate-flash-down { animation: asasa-flash-down 1400ms ease-out both; }
+.animate-live-dot   { animation: asasa-pulse 2400ms ease-in-out infinite; }
+.animate-draw       { stroke-dasharray: 28; animation: asasa-draw 460ms ease-out 120ms both; }
+.animate-pop        { animation: asasa-pop 380ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

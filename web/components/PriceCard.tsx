@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { Odometer } from "@/components/ui/Odometer";
 import { Pill, type PillTone } from "@/components/ui/Pill";
 import { selectedSourceName } from "@/components/TrustBanner";
 import { cx } from "@/lib/cx";
@@ -58,7 +59,7 @@ export function PriceCard({ price, elapsed }: PriceCardProps) {
     <Card
       eyebrow="24K gold · PKR per gram"
       action={
-        <Pill tone={status.tone} dot>
+        <Pill tone={status.tone} dot pulse={price.status === "LIVE"}>
           {status.label}
         </Pill>
       }
@@ -66,8 +67,8 @@ export function PriceCard({ price, elapsed }: PriceCardProps) {
       <div className="flex flex-col gap-5">
         <div>
           {market !== null ? (
-            <p className="font-display text-4xl font-semibold tabular-nums tracking-tight text-ink sm:text-5xl">
-              {formatPKR(market)}{" "}
+            <p className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              <Odometer value={formatPKR(market)} />{" "}
               <span className="text-base font-medium text-ink-muted">/ g</span>
             </p>
           ) : lastKnown !== null ? (
@@ -155,7 +156,9 @@ function PricePill({
       className={cx("tabular-nums", paisaPerGram === null && "text-ink-muted")}
     >
       <span className="text-ink-muted">{label}</span>
-      {paisaPerGram === null ? "—" : formatPKR(paisaPerGram)}
+      <span className="tabular-nums">
+        {paisaPerGram === null ? "—" : formatPKR(paisaPerGram)}
+      </span>
     </Pill>
   );
 }

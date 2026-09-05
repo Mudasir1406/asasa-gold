@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { balanceDeltas, type BalanceDeltas } from "@/lib/balances";
 import { cx } from "@/lib/cx";
+import { Odometer } from "@/components/ui/Odometer";
 import { formatGold, formatPKR } from "@/lib/money";
 import type { Balances } from "@/lib/types";
 
@@ -101,9 +102,14 @@ function Tile({
   const changed = delta !== undefined && delta !== 0;
   return (
     <div
+      // A changed tile flashes once, green up / coral down, so the eye lands
+      // on the balance that actually moved. Keyed on the delta so the
+      // animation restarts per trade rather than only on first mount.
+      key={changed ? `${label}-${delta}` : undefined}
       className={cx(
         "rounded-field border px-4 py-3",
         metal ? "border-gold/50 bg-gold/8" : "border-ink/8 bg-mist",
+        changed && (delta > 0 ? "animate-flash" : "animate-flash-down"),
         className,
       )}
     >
@@ -114,8 +120,8 @@ function Tile({
         {label}
       </dt>
       <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="font-display text-xl font-semibold tabular-nums text-ink">
-          {value}
+        <span className="font-display text-xl font-semibold text-ink">
+          <Odometer value={value} durationMs={460} />
         </span>
         {changed && (
           <span
