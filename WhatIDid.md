@@ -78,7 +78,23 @@ Single page following the brief's five steps. Server-clock countdown, PKR ⇄ gr
 - Expired lock → nothing traded, one-tap re-quote that states whether the price moved.
 - Gold conservation held across every trade: customer + platform inventory stayed at 52,500 mg.
 
-Screenshots at 390 px and 1280 px are in [`docs/screenshots/`](./docs/screenshots/).
+**Re-verified against the deployed stack** (Vercel front end, Railway API, Railway Postgres), not just locally:
+
+- `/up` 200; migrations and the idempotent seed ran on first boot.
+- **25 concurrent confirms against one quote, three rounds → exactly one trade each time**, ledger +4 entries, integrity ok.
+- A 24-trade randomised soak: 24/24 settled, gold conserved at 52,500 mg, cash at 525,000,000 paisa, 102 ledger entries, PKR and GOLD sums both zero, no negative balances.
+- Every stress case above, run through the deployed reviewer drawer.
+
+Screenshots at 320 px, 390 px and 1280 px are in [`docs/screenshots/`](./docs/screenshots/).
+
+### Motion
+
+Restrained on purpose. The hero PKR/gram price and the three balances roll on an odometer so a refresh is visible rather than a silent swap; balance tiles flash once, green up and coral down; the status dot pulses only while the price is genuinely `LIVE`; the receipt check draws in. **The locked quote price deliberately does not animate** — it is a promise the server is holding for 75 seconds, and movement there would undercut the certainty the whole flow is built to convey. `prefers-reduced-motion` renders plain text with no rolling columns at all, and screen readers get the figure, never the digit columns.
+
+### Two bugs worth mentioning, both found by measuring rather than looking
+
+1. **The first Railway deploy would have failed.** Running the image against Postgres locally showed `AUTORUN_LARAVEL_MIGRATION_ISOLATION` calling `migrate --isolated`, which needs the `cache_locks` table — which does not exist on an empty database. Caught before it ever reached Railway.
+2. **The page scrolled sideways on mobile.** An earlier "verified at 390 px" pass had only eyeballed a screenshot. Measuring `documentElement.scrollWidth` against `innerWidth` showed 414 vs 390. Two real causes: a popover anchored to a 28 px `<details>`, and later grid items whose default `min-width: auto` let a non-wrapping odometer blow the track to 398 px in a 358 px grid. The `overflow-x` guard also had to move from `body` to `html`, since an overflow set only on `body` propagates to the viewport and contains nothing.
 
 ## Known gaps
 
@@ -92,7 +108,8 @@ Things I decided not to build, and would want to before this went near a real us
 - **No currency or purity options.** 24K and PKR only, per the brief.
 - **`platform_cash` is unbounded.** Sells can always be paid. A real platform has a treasury limit and would need to refuse or queue.
 - **SQLite locally, Postgres in production.** The concurrency proof ran on SQLite, whose write locking is coarser than Postgres row locking. The `UNIQUE` constraint on `trades.quote_id` is what makes the guarantee portable; I'd want the same script run against production before trusting it fully.
-- **Accessibility is decent, not audited.** Labels, roles and focus order are in place; I have not run a screen reader over it.
+- **Accessibility is decent, not audited.** Labels, roles and focus order are in place and motion respects `prefers-reduced-motion`; I have not run a screen reader over it.
+- **No automated layout regression test.** The horizontal-overflow bug was caught by hand-measuring `scrollWidth` in a browser. A Playwright assertion across a few widths belongs in CI — the unit tests cannot see layout.
 
 ## How to review it in three minutes
 
@@ -106,6 +123,6 @@ Things I decided not to build, and would want to before this went near a real us
 ## Links
 
 - Repository: https://github.com/Mudasir1406/asasa-gold
-- Live app: _(filled after deploy)_
-- API: _(filled after deploy)_
+- Live app: https://asasa-gold.vercel.app
+- API: https://asasa-gold-production.up.railway.app
 - Build record: the full Claude Code transcript for this repo, exported alongside the submission. Dead ends are left in.

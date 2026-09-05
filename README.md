@@ -21,6 +21,7 @@ browser ──▶ web/  (Next.js, Vercel)
 | `api/` | Laravel 13 JSON API: pricing snapshots, quotes, settlement, ledger, reviewer endpoints. Pest tests. Dockerfile for Railway. |
 | `web/` | Next.js 16 single page, mobile-first. Vitest for money maths. |
 | `docs/superpowers/` | the design spec and the implementation plan the code was built from |
+| `docs/screenshots/` | mobile and desktop captures, including the degraded and paused states |
 
 ## Run it locally
 
@@ -54,7 +55,7 @@ Open http://localhost:3000. Seed state: wallet PKR 250,000.00, your gold 2.500 g
 ```bash
 cd api && ./vendor/bin/pest            # unit + feature, SQLite in-memory, all HTTP faked
 cd web && npm test                     # money formatters / quote maths
-api/scripts/double-confirm.sh http://localhost:8000   # 10 parallel confirms → exactly one trade
+api/scripts/double-confirm.sh http://localhost:8000 20   # 20 parallel confirms → exactly one trade
 ```
 
 ## API
@@ -110,5 +111,7 @@ Migrations and the idempotent seed run on boot. Health check: `/up`.
 
 ## Live
 
-- App: _(link)_
-- API: _(link)_
+- **App:** https://asasa-gold.vercel.app
+- **API:** https://asasa-gold-production.up.railway.app (`/api/state`, `/up`)
+
+Opens on seed balances: wallet PKR 250,000.00, your gold 2.500 g, platform inventory 50.000 g. If a previous reviewer left the demo mid-experiment, **Reviewer tools → Reset demo** puts it back.
